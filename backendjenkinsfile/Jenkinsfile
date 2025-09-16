@@ -1,6 +1,11 @@
 pipeline {
     agent any 
 
+    environment {
+        GIT_REPO_NAME = "project2025"
+        GIT_USER_NAME = "simonxox"
+    }
+
     stages {
         stage('Cleaning Workspace') {
             steps {
@@ -39,10 +44,6 @@ pipeline {
         }
 
         stage('Update Deployment file') {
-            environment {
-                GIT_REPO_NAME = "project2025"
-                GIT_USER_NAME = "simonxox"
-            }
             steps {
                 dir('kubernetes-files') {
                     withCredentials([string(credentialsId: 'my-git-pattoken', variable: 'git_token')]) {
@@ -51,14 +52,27 @@ pipeline {
                             git config user.name "simonxox"
                             echo "Build Number: $BUILD_NUMBER"
                             sed -i "s#image:.*#image: 324037320561.dkr.ecr.ap-south-1.amazonaws.com/backend:$BUILD_NUMBER#" backend-deployment.yaml
-                            git add .
+                            git add backend-deployment.yaml
                             git commit -m "Update deployment Image to version $BUILD_NUMBER"
                             git push https://${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                         '''
                     }
                 }
             }
-        } // closing the stage
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                dir('kubernetes-files') {
+                    withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                        sh '''
+                            kubectl apply -f backend-deployment.yaml
+                            kubectl rollout status deployment/backend
+                        '''
+                    }
+                }
+            }
+        }
 
     } // closing stages
 } // closing pipeline
