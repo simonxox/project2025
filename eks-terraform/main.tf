@@ -4,7 +4,7 @@ provider "aws" {
 
  #Creating IAM role for EKS
   resource "aws_iam_role" "master" {
-    name = "jack-eks-master1"
+    name = "daniel-eks-master1"
 
     assume_role_policy = jsonencode({
       "Version": "2012-10-17",
@@ -36,7 +36,7 @@ provider "aws" {
   }
 
   resource "aws_iam_role" "worker" {
-    name = "jack-eks-worker1"
+    name = "daniel-eks-worker1"
 
     assume_role_policy = jsonencode({
       "Version": "2012-10-17",
@@ -53,7 +53,7 @@ provider "aws" {
   }
 
   resource "aws_iam_policy" "autoscaler" {
-    name = "jack-eks-autoscaler-policy1"
+    name = "daniel-eks-autoscaler-policy1"
     policy = jsonencode({
       "Version": "2012-10-17",
       "Statement": [
@@ -106,7 +106,7 @@ provider "aws" {
 
   resource "aws_iam_instance_profile" "worker" {
     depends_on = [aws_iam_role.worker]
-    name       = "jack-eks-worker-new-profile1"
+    name       = "daniel-eks-worker-new-profile1"
     role       = aws_iam_role.worker.name
   }
  
@@ -142,7 +142,7 @@ data "aws_security_group" "selected" {
 
  #Creating EKS Cluster
   resource "aws_eks_cluster" "eks" {
-    name     = "jack-eks"
+    name     = "daniel-eks"
     role_arn = aws_iam_role.master.arn
 
     vpc_config {
@@ -161,7 +161,7 @@ data "aws_security_group" "selected" {
   }
  resource "aws_eks_node_group" "node-grp" {
     cluster_name    = aws_eks_cluster.eks.name
-    node_group_name = "jack-node-group"
+    node_group_name = "daniel-node-group"
     node_role_arn   = aws_iam_role.worker.arn
     subnet_ids      = [data.aws_subnet.subnet-1.id, data.aws_subnet.subnet-2.id]
     capacity_type   = "ON_DEMAND"
@@ -171,7 +171,7 @@ data "aws_security_group" "selected" {
    
 
     labels = {
-      env = "devv"
+      env = "dev"
     }
 
     scaling_config {
