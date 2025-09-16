@@ -35,22 +35,25 @@ pipeline {
             }
         }
         stage('Update Deployment file') {
-    environment {
-        GIT_REPO_NAME = "project2025"
-        GIT_USER_NAME = "simonxox"
-    }
-    steps {
-        dir('kubernetes-files') {
-            withCredentials([string(credentialsId: 'my-git-pattoken', variable: 'git_token')]) {
-                sh '''
-                    git config user.email "simonchinnu13@gmail.com"
-                    git config user.name "simonxox"
-                    echo "Build Number: $BUILD_NUMBER"
-                    sed -i "s#image:.*#image: 324037320561.dkr.ecr.ap-south-1.amazonaws.com/backend:$BUILD_NUMBER#" backend-deployment.yaml
-                    git add .
-                    git commit -m "Update deployment Image to version $BUILD_NUMBER"
-                    git push https://${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                '''
+            environment {
+                GIT_REPO_NAME = "project2025"
+                GIT_USER_NAME = "simonxox"
+            }
+            steps {
+                dir('kubernetes-files') {
+                    withCredentials([string(credentialsId: 'my-git-pattoken', variable: 'git_token')]) {
+                        sh '''
+                            git config user.email "simonchinnu13@gmail.com"
+                            git config user.name "simonxox"
+                            BUILD_NUMBER=${BUILD_NUMBER}
+                            echo $BUILD_NUMBER
+                            sed -i "s#image:.*#image: 324037320561.dkr.ecr.ap-south-1.amazonaws.com/backend:$BUILD_NUMBER#g" backend-deployment.yaml
+                            git add .
+                            git commit -m "Update deployment Image to version \${BUILD_NUMBER}"
+                            git push https://${git_token}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                        '''
+                    }
+                }
             }
         }
     }
